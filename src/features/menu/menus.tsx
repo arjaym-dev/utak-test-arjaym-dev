@@ -2,8 +2,9 @@
 
 import React, { useMemo } from "react"
 import useMenuStore from "../state"
+import { TProductOptionsVariant } from "../state/index.types"
 
-const displayVariants = (variant: any) => {
+const displayVariants = (variant: TProductOptionsVariant) => {
     if (typeof variant == "undefined" || variant == null) return null
 
     let elem: React.ReactNode[] = []
@@ -38,7 +39,7 @@ const displayOptions = (options: any) => {
                             {option.name}
                         </span>
                     </span>
-                    {displayVariants(option.variant)}
+                    {displayVariants(option.variants)}
                 </div>
             ))}
         </div>
@@ -52,7 +53,7 @@ const Menus = () => {
         return menus.filter((menu) => {
             if (category == "All") {
                 return menus
-            } else if (menu.category == category) {
+            } else if (menu.product_category == category) {
                 return menu
             }
         })
@@ -71,34 +72,34 @@ const Menus = () => {
                         <span className="select-none text-xs font-medium">
                             name:{" "}
                             <span className="font-normal text-gray-600">
-                                {menu.name}
+                                {menu.product_name}
                             </span>
                         </span>
                         <span className="select-none text-xs font-medium">
                             price:{" "}
                             <span className="font-normal text-gray-600">
-                                {menu.price}
+                                {menu.product_price}
                             </span>
                         </span>
                         <span className="select-none text-xs font-medium">
                             cost:{" "}
                             <span className="font-normal text-gray-600">
-                                {menu.cost}
+                                {menu.product_cost}
                             </span>
                         </span>
                         <span className="select-none text-xs font-medium">
                             stock:{" "}
                             <span className="font-normal text-gray-600">
-                                {menu.stock}
+                                {menu.product_stock}
                             </span>
                         </span>
                         <span className="select-none text-xs font-medium">
                             category:{" "}
                             <span className="font-normal text-gray-600">
-                                {menu.category}
+                                {menu.product_category}
                             </span>
                         </span>
-                        {displayOptions(menu.options)}
+                        {displayOptions(menu.product_options)}
                     </div>
                 </div>
             ))}

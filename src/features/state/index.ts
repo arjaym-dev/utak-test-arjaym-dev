@@ -1,61 +1,51 @@
 import { create } from "zustand"
+import { v4 as uuidv4 } from "uuid"
 
-type TMenuState = {
-    category: string
-    categories: string[]
-    categoriesDd: string[]
-    create: boolean
-    menus:
-        | {
-              name: string
-              price: number
-              cost: number
-              stock: number
-              category: string
-              options?: {
-                  name: string
-                  variant?: {
-                      name: string
-                      stock: number
-                  }[]
-              }[]
-          }[]
-        | []
-    setCategory: (category: string) => void
-    setCreate: (status: boolean) => void
-}
+import { TMenuState, TProductOptions } from "./index.types"
 
 const menus = [
     {
-        name: "1 pc Fried chicken",
-        price: 140,
-        cost: 150,
-        stock: 140,
-        category: "Foods",
+        product_name: "1 pc Fried chicken",
+        product_price: "140",
+        product_cost: "150",
+        product_stock: "140",
+        product_category: "Foods",
     },
-    { name: "Coca Cola", price: 50, cost: 60, stock: 140, category: "Drinks" },
-    { name: "Sprite", price: 50, cost: 60, stock: 140, category: "Drinks" },
     {
-        name: "1 pc Fried chicken w/coke",
-        price: 140,
-        cost: 150,
-        stock: 140,
-        category: "Foods & Drinks",
-        options: [
+        product_name: "Coca Cola",
+        product_price: "50",
+        product_cost: "60",
+        product_stock: "140",
+        product_category: "Drinks",
+    },
+    {
+        product_name: "Sprite",
+        product_price: "50",
+        product_cost: "60",
+        product_stock: "140",
+        product_category: "Drinks",
+    },
+    {
+        product_name: "1 pc Fried chicken w/coke",
+        product_price: "140",
+        product_cost: "150",
+        product_stock: "140",
+        product_category: "Foods & Drinks",
+        product_options: [
             {
                 name: "Fries",
-                variant: [
+                variants: [
                     {
                         name: "Small",
-                        stock: 3,
+                        stock: "3",
                     },
                     {
                         name: "Medium",
-                        stock: 3,
+                        stock: "3",
                     },
                     {
                         name: "Large",
-                        stock: 3,
+                        stock: "3",
                     },
                 ],
             },
@@ -66,7 +56,7 @@ const menus = [
     },
 ]
 
-const useMenuStore = create<TMenuState>()((set) => ({
+const useMenuStore = create<TMenuState>()((set, state) => ({
     category: "All",
     categories: ["All", "Foods", "Drinks", "Foods & Drinks"],
     categoriesDd: ["Foods", "Drinks", "Foods & Drinks"],
@@ -78,12 +68,90 @@ const useMenuStore = create<TMenuState>()((set) => ({
         product_price: "",
         product_stock: "",
         product_category: "Foods",
+        product_options: [],
     },
     setCategory: (category) => {
         set({ category: category })
     },
     setCreate: (status) => {
         set({ create: status })
+    },
+    setAddOptions: () => {
+        const { add } = state()
+        const product_options = add.product_options as TProductOptions
+        const newProductOptions = [
+            ...product_options,
+            { uuid: uuidv4(), name: "", variants: [] },
+        ]
+
+        set({
+            add: {
+                ...add,
+                product_options: newProductOptions,
+            },
+        })
+    },
+    setRemoveOptions: (uuid: string) => {
+        const { add } = state()
+        const product_options = add.product_options as TProductOptions
+        const newProductOptions = product_options.filter(
+            (product) => product.uuid != uuid
+        )
+
+        set({
+            add: {
+                ...add,
+                product_options: newProductOptions,
+            },
+        })
+    },
+    setAddVariant: (uuid: string) => {
+        const { add } = state()
+        const product_options = add.product_options as TProductOptions
+
+        const newProductOptions = product_options.map((product) => {
+            const variant = [...product.variants]
+
+            if (uuid == product.uuid) {
+                variant.push({ uuid: uuidv4(), name: "" })
+
+                return { ...product, variants: variant }
+            } else {
+                return product
+            }
+        })
+
+        set({
+            add: {
+                ...add,
+                product_options: newProductOptions,
+            },
+        })
+    },
+    setRemoveVariant: (option_uuid, variant_uuid) => {
+        const { add } = state()
+        const product_options = add.product_options as TProductOptions
+
+        const newProductOptions = product_options.map((product) => {
+            const variants = [...product.variants]
+
+            if (option_uuid == product.uuid) {
+                const newVariants = variants.filter(
+                    (variant) => variant.uuid != variant_uuid
+                )
+
+                return { ...product, variants: newVariants }
+            } else {
+                return product
+            }
+        })
+
+        set({
+            add: {
+                ...add,
+                product_options: newProductOptions,
+            },
+        })
     },
 }))
 
