@@ -12,4 +12,17 @@ export const MenuSchemaValidation = Yup.object().shape({
         .matches(/^\d+$/, "Invalid input only number allowed")
         .required("Product stock is required"),
     product_category: Yup.string().required("Product category is required"),
+    product_options: Yup.array()
+        .compact()
+        .of(
+            Yup.object({
+                name: Yup.string().required("Option name is required"),
+                variants: Yup.array().of(
+                    Yup.object({
+                        name: Yup.string().required("Variant name is required"),
+                        stock: Yup.string(),
+                    })
+                ),
+            })
+        ),
 })

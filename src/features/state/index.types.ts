@@ -4,7 +4,7 @@ export type TCreate = {
     product_price: string
     product_stock: string
     product_category: string
-    product_options?: TProductOptions
+    product_options?: TProductOptions[]
 }
 
 export type TProductOptionsVariant = {
@@ -17,7 +17,9 @@ export type TProductOptions = {
     uuid: string
     name: string
     variants: TProductOptionsVariant
-}[]
+}
+
+export type TErrors = { [key: string]: string }[]
 
 export type TMenus =
     | {
@@ -43,11 +45,23 @@ export type TMenuState = {
     create: boolean
     add: TCreate
     menus: TMenus
-
+    optionsError: TErrors
+    variantsError: TErrors
+    setMenus: (payload: any) => void
     setCategory: (category: string) => void
     setCreate: (status: boolean) => void
+    setUpdateOptionName: (
+        { name }: { [name: string]: string },
+        uuid: string
+    ) => void
+    setUpdateOptionVariantName: (
+        { name }: { [name: string]: string },
+        variantUuid: string,
+        optionUuid: string
+    ) => void
     setAddOptions: () => void
     setRemoveOptions: (uuid: string) => void
     setAddVariant: (uuid: string) => void
     setRemoveVariant: (option_uuid: string, variant_uuid: string) => void
+    setValidateOptions: () => void
 }

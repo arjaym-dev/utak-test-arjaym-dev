@@ -2,14 +2,16 @@
 
 import { Formik, FormikProps } from "formik"
 import { useRef } from "react"
+import classNames from "classnames"
+
 import Input from "@/shared/components/input"
 import useMenuStore from "../state"
 import { TProductOptionsVariant, TCreate } from "../state/index.types"
 import { MenuSchemaValidation } from "./validation"
 
-{
-    /*  */
-}
+import { ref, set, push } from "firebase/database"
+import { db } from "./utils"
+
 const DisplayVariant = ({
     variants,
     productId,
@@ -17,79 +19,159 @@ const DisplayVariant = ({
     variants: TProductOptionsVariant
     productId: string
 }) => {
-    const { setRemoveVariant } = useMenuStore()
+    const { variantsError, setRemoveVariant, setUpdateOptionVariantName } =
+        useMenuStore()
 
     if (variants.length == 0) return null
 
-    return variants.map((variant, index) => (
-        <div key={index} className="flex items-end">
-            <Input
-                parentClass="flex flex-col"
-                labelClass="mr-2 mb-2.5 text-sm"
-                label="Product variant name"
-                min={0}
-            />
-            <button
-                onClick={() => setRemoveVariant(productId, variant.uuid)}
-                className="mb-2 ml-2 rounded-md bg-red-500 px-1.5 text-sm text-white hover:bg-red-500/70"
-            >
-                -
-            </button>
-        </div>
-    ))
+    const handleChangeOptionsVariant = (
+        e: React.ChangeEvent<HTMLInputElement>,
+        variantUuid: string,
+        optionUuid: string
+    ) => {
+        const { name, value } = e.target
+
+        setUpdateOptionVariantName({ [name]: value }, variantUuid, optionUuid)
+    }
+
+    return variants.map((variant, index) => {
+        let error = ""
+
+        for (let i = 0; i < variantsError.length; i++) {
+            if (variant.uuid == variantsError[i].uuid) {
+                error = variantsError[i].error
+            }
+        }
+        return (
+            <div key={index} className="mb-2.5 flex items-end">
+                <Input
+                    parentClass="flex flex-col"
+                    labelClass="mr-2 mb-2.5 text-sm"
+                    label="Product variant name"
+                    name="name"
+                    value={variant.name}
+                    error={error}
+                    onChange={(e) =>
+                        handleChangeOptionsVariant(e, variant.uuid, productId)
+                    }
+                />
+                <button
+                    onClick={() => setRemoveVariant(productId, variant.uuid)}
+                    className={classNames(
+                        { "mb-2": !error, "mb-7": error },
+                        "ml-2 rounded-md bg-red-500 px-1.5 text-sm text-white hover:bg-red-500/70"
+                    )}
+                >
+                    -
+                </button>
+            </div>
+        )
+    })
 }
 
 const DisplayOptions = () => {
-    const { add, setRemoveOptions, setAddVariant } = useMenuStore()
+    const {
+        add,
+        optionsError,
+        setRemoveOptions,
+        setAddVariant,
+        setUpdateOptionName,
+    } = useMenuStore()
 
     if (add.product_options && add.product_options.length == 0) return null
 
-    return add.product_options?.map((product, index) => (
-        <div key={index} className="mb-5">
-            <button
-                onClick={() => setAddVariant(product.uuid)}
-                className="mb-2.5 rounded-md bg-green-500 px-1.5 py-1.5 text-sm text-white hover:bg-green-500/70"
-            >
-                Add variant +
-            </button>
-            <button
-                onClick={() => setRemoveOptions(product.uuid)}
-                className="ml-2.5 rounded-md bg-red-500 px-1.5 py-1.5 text-sm text-white hover:bg-red-500/70"
-            >
-                Remove options -
-            </button>
-            <div className="mb-2.5">
-                <Input
-                    labelClass="mr-2 text-sm mb-2.5"
-                    parentClass="flex flex-col"
-                    label="Product option name"
+    const handleChangeOptions = (
+        e: React.ChangeEvent<HTMLInputElement>,
+        optionUuid: string
+    ) => {
+        const { name, value } = e.target
+
+        setUpdateOptionName({ [name]: value }, optionUuid)
+    }
+
+    return add.product_options?.map((product, index) => {
+        let error = ""
+
+        for (let i = 0; i < optionsError.length; i++) {
+            if (product.uuid == optionsError[i].uuid) {
+                error = optionsError[i].error
+            }
+        }
+
+        return (
+            <div key={index} className="mb-5">
+                <button
+                    onClick={() => setAddVariant(product.uuid)}
+                    className="mb-2.5 rounded-md bg-green-500 px-1.5 py-1.5 text-sm text-white hover:bg-green-500/70"
+                >
+                    Add variant +
+                </button>
+                <button
+                    onClick={() => setRemoveOptions(product.uuid)}
+                    className="ml-2.5 rounded-md bg-red-500 px-1.5 py-1.5 text-sm text-white hover:bg-red-500/70"
+                >
+                    Remove options -
+                </button>
+                <div className="mb-2.5">
+                    <Input
+                        labelClass="mr-2 text-sm mb-2.5"
+                        parentClass="flex flex-col"
+                        label="Product option name"
+                        value={product.name}
+                        error={error}
+                        name="name"
+                        onChange={(e) => handleChangeOptions(e, product.uuid)}
+                    />
+                </div>
+                <DisplayVariant
+                    variants={product.variants}
+                    productId={product.uuid}
                 />
             </div>
-            <DisplayVariant
-                variants={product.variants}
-                productId={product.uuid}
-            />
-        </div>
-    ))
+        )
+    })
 }
+
 const Create = () => {
-    const { create, categoriesDd, add, setAddOptions } = useMenuStore()
+    const {
+        create,
+        categoriesDd,
+        add,
+        optionsError,
+        variantsError,
+        setAddOptions,
+        setValidateOptions,
+        setMenus,
+    } = useMenuStore()
     const formRef = useRef<FormikProps<TCreate> | null>(null)
 
     if (!create) return null
 
     const handleValidateForm = () => {
         formRef.current?.handleSubmit()
+
+        setValidateOptions()
     }
 
     const handleSubmit = (values: TCreate) => {
         const { product_options, ...restValues } = values
+
+        if (optionsError.length === 0 || variantsError.length === 0) {
+            const obj = { product_options: add.product_options, ...restValues }
+
+            set(push(ref(db, "menus")), obj)
+
+            setMenus({
+                create: false,
+                add: { ...add, product_options: [] },
+                optionsError: [],
+                variantsError: [],
+            })
+        }
     }
 
-    const handleAddOptions = () => {
-        setAddOptions()
-    }
-    console.log("add:", add)
+    const handleAddOptions = () => setAddOptions()
+
     return (
         <div>
             <Formik
@@ -99,7 +181,6 @@ const Create = () => {
                 onSubmit={handleSubmit}
             >
                 {({ values, errors, handleChange }) => {
-                    console.log("errors:", errors)
                     return (
                         <>
                             <div className="mt-2.5 flex flex-col flex-wrap gap-y-2.5 p-2.5 sm:flex-row">
@@ -185,6 +266,7 @@ const Create = () => {
                                     Add options +
                                 </button>
                                 <button
+                                    type="button"
                                     onClick={handleValidateForm}
                                     className="ml-2.5 rounded-md bg-green-500 px-1.5 py-1.5 text-sm text-white hover:bg-green-500/70"
                                 >

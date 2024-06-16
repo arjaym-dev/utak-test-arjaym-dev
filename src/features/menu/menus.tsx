@@ -1,9 +1,10 @@
 "use client"
 
-import React, { useMemo } from "react"
+import React, { useEffect, useMemo } from "react"
+import { onChildAdded, onValue, ref } from "firebase/database"
 import useMenuStore from "../state"
 import { TProductOptionsVariant } from "../state/index.types"
-
+import { db, flattenObjToArray } from "./utils"
 const displayVariants = (variant: TProductOptionsVariant) => {
     if (typeof variant == "undefined" || variant == null) return null
 
@@ -47,23 +48,31 @@ const displayOptions = (options: any) => {
 }
 
 const Menus = () => {
-    const { create, menus, category, setCategory } = useMenuStore()
+    const { create, menus, category, setCategory, setMenus } = useMenuStore()
 
-    const filterMenus = useMemo(() => {
-        return menus.filter((menu) => {
-            if (category == "All") {
-                return menus
-            } else if (menu.product_category == category) {
-                return menu
-            }
+    const menusRef = ref(db, "menus")
+
+    useEffect(() => {
+        onValue(menusRef, (snapshot) => {
+            const data = snapshot.val()
+
+            const flatten = flattenObjToArray(data).filter((dt) => {
+                if (category === "All") {
+                    return menus
+                } else if (category == dt.product_category) {
+                    return dt
+                }
+            })
+
+            setMenus({ menus: flatten })
         })
-    }, [menus, category, setCategory])
+    }, [category])
 
     if (create) return null
 
     return (
         <div className="flex h-full max-h-[500px] min-h-[500px] flex-wrap content-baseline gap-2.5 overflow-y-auto">
-            {filterMenus.map((menu, index) => (
+            {menus.map((menu, index) => (
                 <div key={index} className="w-full max-w-[209px]">
                     <div className="flex h-[100px] w-full select-none items-center justify-center border-2">
                         Image Here
