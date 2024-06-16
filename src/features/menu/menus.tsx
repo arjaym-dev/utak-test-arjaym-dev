@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo } from "react"
 import { onChildAdded, onValue, ref } from "firebase/database"
 import useMenuStore from "../state"
-import { TProductOptionsVariant } from "../state/index.types"
+import { TCreate, TProductOptionsVariant } from "../state/index.types"
 import { db, flattenObjToArray } from "./utils"
 const displayVariants = (variant: TProductOptionsVariant) => {
     if (typeof variant == "undefined" || variant == null) return null
@@ -48,7 +48,8 @@ const displayOptions = (options: any) => {
 }
 
 const Menus = () => {
-    const { create, menus, category, setCategory, setMenus } = useMenuStore()
+    const { create, update, menus, category, setEdit, setMenus } =
+        useMenuStore()
 
     const menusRef = ref(db, "menus")
 
@@ -68,7 +69,9 @@ const Menus = () => {
         })
     }, [category])
 
-    if (create) return null
+    const handleEdit = (menu: any) => setEdit(!update, menu)
+
+    if (update || create) return null
 
     return (
         <div className="flex h-full max-h-[500px] min-h-[500px] flex-wrap content-baseline gap-2.5 overflow-y-auto">
@@ -77,38 +80,49 @@ const Menus = () => {
                     <div className="flex h-[100px] w-full select-none items-center justify-center border-2">
                         Image Here
                     </div>
-                    <div className="flex h-full max-h-[100px] w-full flex-col overflow-y-auto bg-gray-100/50 p-2.5 shadow-md">
-                        <span className="select-none text-xs font-medium">
-                            name:{" "}
-                            <span className="font-normal text-gray-600">
-                                {menu.product_name}
+                    <div className="h-full max-h-[140px] overflow-y-auto bg-gray-100/50 p-2.5 shadow-md">
+                        <button
+                            onClick={() => handleEdit(menu)}
+                            className="mr-1 rounded-md bg-green-500 px-1.5 py-1 text-sm text-white hover:bg-green-500/70"
+                        >
+                            Edit
+                        </button>
+                        <button className="rounded-md bg-red-500 px-1.5 py-1 text-sm text-white hover:bg-red-500/70">
+                            Delete
+                        </button>
+                        <div className="mt-1.5 flex w-full flex-col">
+                            <span className="select-none text-xs font-medium">
+                                name:{" "}
+                                <span className="font-normal text-gray-600">
+                                    {menu.product_name}
+                                </span>
                             </span>
-                        </span>
-                        <span className="select-none text-xs font-medium">
-                            price:{" "}
-                            <span className="font-normal text-gray-600">
-                                {menu.product_price}
+                            <span className="select-none text-xs font-medium">
+                                price:{" "}
+                                <span className="font-normal text-gray-600">
+                                    {menu.product_price}
+                                </span>
                             </span>
-                        </span>
-                        <span className="select-none text-xs font-medium">
-                            cost:{" "}
-                            <span className="font-normal text-gray-600">
-                                {menu.product_cost}
+                            <span className="select-none text-xs font-medium">
+                                cost:{" "}
+                                <span className="font-normal text-gray-600">
+                                    {menu.product_cost}
+                                </span>
                             </span>
-                        </span>
-                        <span className="select-none text-xs font-medium">
-                            stock:{" "}
-                            <span className="font-normal text-gray-600">
-                                {menu.product_stock}
+                            <span className="select-none text-xs font-medium">
+                                stock:{" "}
+                                <span className="font-normal text-gray-600">
+                                    {menu.product_stock}
+                                </span>
                             </span>
-                        </span>
-                        <span className="select-none text-xs font-medium">
-                            category:{" "}
-                            <span className="font-normal text-gray-600">
-                                {menu.product_category}
+                            <span className="select-none text-xs font-medium">
+                                category:{" "}
+                                <span className="font-normal text-gray-600">
+                                    {menu.product_category}
+                                </span>
                             </span>
-                        </span>
-                        {displayOptions(menu.product_options)}
+                            {displayOptions(menu.product_options)}
+                        </div>
                     </div>
                 </div>
             ))}

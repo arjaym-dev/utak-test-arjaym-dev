@@ -43,13 +43,16 @@ export type TMenuState = {
     categories: string[]
     categoriesDd: string[]
     create: boolean
+    update: boolean
     add: TCreate
+    edit: TCreate
     menus: TMenus
     optionsError: TErrors
     variantsError: TErrors
     setMenus: (payload: any) => void
     setCategory: (category: string) => void
-    setCreate: (status: boolean) => void
+    setOpenForm: (status: string) => void
+    setEdit: (status: boolean, menu: TCreate) => void
     setUpdateOptionName: (
         { name }: { [name: string]: string },
         uuid: string

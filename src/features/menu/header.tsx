@@ -4,10 +4,10 @@ import classNames from "classnames"
 import useMenuStore from "../state"
 
 const HeaderMenu = () => {
-    const { create, setCreate } = useMenuStore()
+    const { create, update, setOpenForm } = useMenuStore()
 
-    const handleOpenCreate = () => {
-        setCreate(!create)
+    const handleOpenForm = (type: string) => {
+        setOpenForm(type)
     }
 
     const btnClass = classNames(
@@ -19,9 +19,26 @@ const HeaderMenu = () => {
     return (
         <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold">UTAK TEST</h1>
-            <button onClick={handleOpenCreate} className={btnClass}>
-                {create ? "Cancel" : "Create"}
-            </button>
+            <div>
+                {create == false && update == false && (
+                    <button
+                        onClick={() => handleOpenForm("add")}
+                        className={btnClass}
+                    >
+                        Create
+                    </button>
+                )}
+                {create == false && update && (
+                    <button
+                        onClick={() => handleOpenForm("edit")}
+                        className={
+                            "rounded-md bg-red-500 px-1.5 py-1.5 text-sm text-white hover:bg-red-500/70"
+                        }
+                    >
+                        Cancel
+                    </button>
+                )}
+            </div>
         </div>
     )
 }

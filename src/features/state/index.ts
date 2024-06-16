@@ -8,10 +8,19 @@ const useMenuStore = create<TMenuState>()((set, state) => ({
     categories: ["All", "Foods", "Drinks", "Foods & Drinks"],
     categoriesDd: ["Foods", "Drinks", "Foods & Drinks"],
     create: false,
+    update: false,
     menus: [],
     optionsError: [],
     variantsError: [],
     add: {
+        product_name: "",
+        product_cost: "",
+        product_price: "",
+        product_stock: "",
+        product_category: "Foods",
+        product_options: [],
+    },
+    edit: {
         product_name: "",
         product_cost: "",
         product_price: "",
@@ -25,24 +34,41 @@ const useMenuStore = create<TMenuState>()((set, state) => ({
     setCategory: (category) => {
         set({ category: category })
     },
-    setCreate: (status) => {
-        const { add } = state()
+    setOpenForm: (type) => {
+        const { add, create, update } = state()
 
-        if (status) {
-            set({ create: status })
+        if (type == "add") {
+            if (create) {
+                set({ create: !create })
+            } else {
+                set({
+                    create: !create,
+                    add: { ...add, product_options: [] },
+                    optionsError: [],
+                    variantsError: [],
+                })
+            }
         } else {
-            set({
-                create: status,
-                add: { ...add, product_options: [] },
-                optionsError: [],
-                variantsError: [],
-            })
+            if (update) {
+                set({ update: !update })
+            }
+        }
+    },
+    setEdit: (status, menu) => {
+        if (status) {
+            set({ update: status, edit: menu })
+        } else {
+            set({ update: status, optionsError: [], variantsError: [] })
         }
     },
     setUpdateOptionName: (option, optionUuid) => {
-        const { add, optionsError } = state()
+        const { add, edit, optionsError, create, update } = state()
 
-        const productOptions = add.product_options as TProductOptions[]
+        let productOptions: TProductOptions[] = []
+
+        if (create) productOptions = add.product_options as TProductOptions[]
+        if (update) productOptions = edit.product_options as TProductOptions[]
+
         const copiedProductOptions = [...productOptions]
         const copiedOptionsError = [...optionsError]
         const newProductOptions = copiedProductOptions.map((product) => {
@@ -56,18 +82,34 @@ const useMenuStore = create<TMenuState>()((set, state) => ({
         const newOptionsError = copiedOptionsError.filter(
             (error) => error.uuid != optionUuid
         )
-        set({
-            add: {
-                ...add,
-                product_options: newProductOptions,
-            },
-            optionsError: newOptionsError,
-        })
+
+        if (create) {
+            set({
+                add: {
+                    ...add,
+                    product_options: newProductOptions,
+                },
+                optionsError: newOptionsError,
+            })
+        }
+        if (update) {
+            set({
+                edit: {
+                    ...edit,
+                    product_options: newProductOptions,
+                },
+                optionsError: newOptionsError,
+            })
+        }
     },
     setUpdateOptionVariantName: (option, variantUuid, optionUuid) => {
-        const { add, variantsError } = state()
+        const { add, edit, create, update, variantsError } = state()
 
-        const productOptions = add.product_options as TProductOptions[]
+        let productOptions: TProductOptions[] = []
+
+        if (create) productOptions = add.product_options as TProductOptions[]
+        if (update) productOptions = edit.product_options as TProductOptions[]
+
         const copiedProductOptions = [...productOptions]
         const copiedVariantsError = [...variantsError]
         const newProductOptions = copiedProductOptions.map((product) => {
@@ -92,49 +134,98 @@ const useMenuStore = create<TMenuState>()((set, state) => ({
             (error) => error.uuid != variantUuid
         )
 
-        set({
-            add: {
-                ...add,
-                product_options: newProductOptions,
-            },
-            variantsError: newVariantsError,
-        })
+        if (create) {
+            set({
+                add: {
+                    ...add,
+                    product_options: newProductOptions,
+                },
+                variantsError: newVariantsError,
+            })
+        }
+
+        if (update) {
+            set({
+                edit: {
+                    ...edit,
+                    product_options: newProductOptions,
+                },
+                variantsError: newVariantsError,
+            })
+        }
     },
 
     setAddOptions: () => {
-        const { add } = state()
-        const product_options = add.product_options as TProductOptions[]
+        const { add, edit, create, update } = state()
+
+        let productOptions: TProductOptions[] = []
+
+        if (create) productOptions = add.product_options as TProductOptions[]
+        if (update) productOptions = edit.product_options as TProductOptions[]
+
+        if (typeof productOptions == "undefined") productOptions = []
+
         const newProductOptions = [
-            ...product_options,
+            ...productOptions,
             { uuid: uuidv4(), name: "", variants: [] },
         ]
 
-        set({
-            add: {
-                ...add,
-                product_options: newProductOptions,
-            },
-        })
+        if (create) {
+            set({
+                add: {
+                    ...add,
+                    product_options: newProductOptions,
+                },
+            })
+        }
+
+        if (update) {
+            set({
+                edit: {
+                    ...edit,
+                    product_options: newProductOptions,
+                },
+            })
+        }
     },
     setRemoveOptions: (uuid: string) => {
-        const { add } = state()
-        const product_options = add.product_options as TProductOptions[]
-        const newProductOptions = product_options.filter(
+        const { add, edit, create, update } = state()
+
+        let productOptions: TProductOptions[] = []
+
+        if (create) productOptions = add.product_options as TProductOptions[]
+        if (update) productOptions = edit.product_options as TProductOptions[]
+
+        const newProductOptions = productOptions.filter(
             (product) => product.uuid != uuid
         )
 
-        set({
-            add: {
-                ...add,
-                product_options: newProductOptions,
-            },
-        })
+        if (create) {
+            set({
+                add: {
+                    ...add,
+                    product_options: newProductOptions,
+                },
+            })
+        }
+        if (update) {
+            set({
+                edit: {
+                    ...edit,
+                    product_options: newProductOptions,
+                },
+            })
+        }
     },
     setAddVariant: (uuid: string) => {
-        const { add } = state()
-        const product_options = add.product_options as TProductOptions[]
+        const { add, edit, create, update } = state()
 
-        const newProductOptions = product_options.map((product) => {
+        let productOptions: TProductOptions[] = []
+
+        if (create) productOptions = add.product_options as TProductOptions[]
+        if (update) productOptions = edit.product_options as TProductOptions[]
+
+        const newProductOptions = productOptions.map((product) => {
             const variant = [...product.variants]
 
             if (uuid == product.uuid) {
@@ -146,18 +237,32 @@ const useMenuStore = create<TMenuState>()((set, state) => ({
             }
         })
 
-        set({
-            add: {
-                ...add,
-                product_options: newProductOptions,
-            },
-        })
+        if (create) {
+            set({
+                add: {
+                    ...add,
+                    product_options: newProductOptions,
+                },
+            })
+        }
+        if (update) {
+            set({
+                edit: {
+                    ...edit,
+                    product_options: newProductOptions,
+                },
+            })
+        }
     },
     setRemoveVariant: (option_uuid, variant_uuid) => {
-        const { add } = state()
-        const product_options = add.product_options as TProductOptions[]
+        const { add, edit, create, update } = state()
 
-        const newProductOptions = product_options.map((product) => {
+        let productOptions: TProductOptions[] = []
+
+        if (create) productOptions = add.product_options as TProductOptions[]
+        if (update) productOptions = edit.product_options as TProductOptions[]
+
+        const newProductOptions = productOptions.map((product) => {
             const variants = [...product.variants]
 
             if (option_uuid == product.uuid) {
@@ -171,17 +276,31 @@ const useMenuStore = create<TMenuState>()((set, state) => ({
             }
         })
 
-        set({
-            add: {
-                ...add,
-                product_options: newProductOptions,
-            },
-        })
+        if (create) {
+            set({
+                add: {
+                    ...add,
+                    product_options: newProductOptions,
+                },
+            })
+        }
+        if (update) {
+            set({
+                edit: {
+                    ...edit,
+                    product_options: newProductOptions,
+                },
+            })
+        }
     },
     setValidateOptions: () => {
-        const { add } = state()
+        const { add, edit, create, update } = state()
 
-        const productOptions = add.product_options as TProductOptions[]
+        let productOptions: TProductOptions[] = []
+
+        if (create) productOptions = add.product_options as TProductOptions[]
+        if (update) productOptions = edit.product_options as TProductOptions[]
+
         const optionErrors = []
         const variantErrors = []
 

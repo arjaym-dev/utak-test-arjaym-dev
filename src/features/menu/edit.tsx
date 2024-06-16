@@ -71,14 +71,14 @@ const DisplayVariant = ({
 
 const DisplayOptions = () => {
     const {
-        add,
+        edit,
         optionsError,
         setRemoveOptions,
         setAddVariant,
         setUpdateOptionName,
     } = useMenuStore()
 
-    if (add.product_options && add.product_options.length == 0) return null
+    if (edit.product_options && edit.product_options.length == 0) return null
 
     const handleChangeOptions = (
         e: React.ChangeEvent<HTMLInputElement>,
@@ -86,10 +86,12 @@ const DisplayOptions = () => {
     ) => {
         const { name, value } = e.target
 
+        console.log(optionUuid)
+
         setUpdateOptionName({ [name]: value }, optionUuid)
     }
 
-    return add.product_options?.map((product, index) => {
+    return edit.product_options?.map((product, index) => {
         let error = ""
 
         for (let i = 0; i < optionsError.length; i++) {
@@ -132,12 +134,12 @@ const DisplayOptions = () => {
     })
 }
 
-const Create = () => {
+const Edit = () => {
     const {
         create,
         update,
         categoriesDd,
-        add,
+        edit,
         optionsError,
         variantsError,
         setAddOptions,
@@ -146,10 +148,7 @@ const Create = () => {
     } = useMenuStore()
     const formRef = useRef<FormikProps<TCreate> | null>(null)
 
-    console.log("update:", update)
-    console.log("create:", create)
-
-    if (create == false) return null
+    if (update == false) return null
 
     const handleValidateForm = () => {
         formRef.current?.handleSubmit()
@@ -161,13 +160,13 @@ const Create = () => {
         const { product_options, ...restValues } = values
 
         if (optionsError.length === 0 || variantsError.length === 0) {
-            const obj = { product_options: add.product_options, ...restValues }
+            const obj = { product_options: edit.product_options, ...restValues }
 
             set(push(ref(db, "menus")), obj)
 
             setMenus({
-                create: false,
-                add: { ...add, product_options: [] },
+                update: false,
+                edit: { ...edit, product_options: [] },
                 optionsError: [],
                 variantsError: [],
             })
@@ -181,7 +180,7 @@ const Create = () => {
             <Formik
                 validationSchema={MenuSchemaValidation}
                 innerRef={formRef}
-                initialValues={add}
+                initialValues={edit}
                 onSubmit={handleSubmit}
             >
                 {({ values, errors, handleChange }) => {
@@ -288,4 +287,4 @@ const Create = () => {
     )
 }
 
-export default Create
+export default Edit

@@ -4,6 +4,7 @@ import Categories from "./categories"
 import Menus from "./menus"
 import HeaderMenu from "./header"
 import Create from "./create"
+import Edit from "./edit"
 
 export default function Menu() {
     return (
@@ -13,6 +14,7 @@ export default function Menu() {
                 <Categories />
                 <Menus />
                 <Create />
+                <Edit />
             </div>
         </main>
     )
