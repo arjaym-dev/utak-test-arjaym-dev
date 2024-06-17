@@ -1,7 +1,7 @@
 "use client"
 
 import classNames from "classnames"
-import { LegacyRef, forwardRef } from "react"
+import { forwardRef } from "react"
 
 type InputProps = {
     label?: string

@@ -1,4 +1,5 @@
 "use client"
+/* eslint-disable react-hooks/exhaustive-deps */
 
 import React, { useEffect } from "react"
 import { onValue, ref, update as fbUpdate } from "firebase/database"
