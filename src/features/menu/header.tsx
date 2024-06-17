@@ -28,6 +28,14 @@ const HeaderMenu = () => {
                         Create
                     </button>
                 )}
+                {create == true && update == false && (
+                    <button
+                        onClick={() => handleOpenForm("add")}
+                        className={btnClass}
+                    >
+                        Cancel
+                    </button>
+                )}
                 {create == false && update && (
                     <button
                         onClick={() => handleOpenForm("edit")}

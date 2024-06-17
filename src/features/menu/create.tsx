@@ -146,9 +146,6 @@ const Create = () => {
     } = useMenuStore()
     const formRef = useRef<FormikProps<TCreate> | null>(null)
 
-    console.log("update:", update)
-    console.log("create:", create)
-
     if (create == false) return null
 
     const handleValidateForm = () => {

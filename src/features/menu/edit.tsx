@@ -9,7 +9,7 @@ import useMenuStore from "../state"
 import { TProductOptionsVariant, TCreate } from "../state/index.types"
 import { MenuSchemaValidation } from "./validation"
 
-import { ref, set, push } from "firebase/database"
+import { ref, set, push, update as fbUpdate, child } from "firebase/database"
 import { db } from "./utils"
 
 const DisplayVariant = ({
@@ -159,10 +159,14 @@ const Edit = () => {
     const handleSubmit = (values: TCreate) => {
         const { product_options, ...restValues } = values
 
-        if (optionsError.length === 0 || variantsError.length === 0) {
+        if (optionsError.length === 0 && variantsError.length === 0) {
             const obj = { product_options: edit.product_options, ...restValues }
 
-            set(push(ref(db, "menus")), obj)
+            const updates: any = {}
+
+            updates["/menus/" + obj.uuid] = obj
+
+            fbUpdate(ref(db), updates)
 
             setMenus({
                 update: false,

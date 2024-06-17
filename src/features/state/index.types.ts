@@ -1,4 +1,5 @@
 export type TCreate = {
+    uuid?: string
     product_name: string
     product_cost: string
     product_price: string
@@ -23,6 +24,7 @@ export type TErrors = { [key: string]: string }[]
 
 export type TMenus =
     | {
+          uuid?: string
           product_name: string
           product_price: string
           product_cost: string
