@@ -157,7 +157,7 @@ const Create = () => {
     const handleSubmit = (values: TCreate) => {
         const { product_options, ...restValues } = values
 
-        if (optionsError.length === 0 || variantsError.length === 0) {
+        if (optionsError.length === 0 && variantsError.length === 0) {
             const obj = { product_options: add.product_options, ...restValues }
 
             set(push(ref(db, "menus")), obj)

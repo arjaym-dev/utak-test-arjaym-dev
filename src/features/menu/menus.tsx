@@ -1,9 +1,9 @@
 "use client"
 
-import React, { useEffect, useMemo } from "react"
-import { onChildAdded, onValue, ref } from "firebase/database"
+import React, { useEffect } from "react"
+import { onValue, ref, update as fbUpdate } from "firebase/database"
 import useMenuStore from "../state"
-import { TCreate, TProductOptionsVariant } from "../state/index.types"
+import { TProductOptionsVariant } from "../state/index.types"
 import { db, flattenObjToArray } from "./utils"
 const displayVariants = (variant: TProductOptionsVariant) => {
     if (typeof variant == "undefined" || variant == null) return null
@@ -71,6 +71,13 @@ const Menus = () => {
 
     const handleEdit = (menu: any) => setEdit(!update, menu)
 
+    const handleDelete = (uuid: string | undefined) => {
+        const updates: any = {}
+
+        updates["/menus/" + uuid] = null
+
+        fbUpdate(ref(db), updates)
+    }
     if (update || create) return null
 
     return (
@@ -87,7 +94,10 @@ const Menus = () => {
                         >
                             Edit
                         </button>
-                        <button className="rounded-md bg-red-500 px-1.5 py-1 text-sm text-white hover:bg-red-500/70">
+                        <button
+                            onClick={() => handleDelete(menu.uuid)}
+                            className="rounded-md bg-red-500 px-1.5 py-1 text-sm text-white hover:bg-red-500/70"
+                        >
                             Delete
                         </button>
                         <div className="mt-1.5 flex w-full flex-col">
