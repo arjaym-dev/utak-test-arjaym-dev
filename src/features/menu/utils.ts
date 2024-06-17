@@ -4,7 +4,7 @@ import { FirebaseApp } from "@/shared/config/firebase-config"
 export const db = FgetDatabase(FirebaseApp)
 
 export const flattenObjToArray = (obj: any) => {
-    if (obj == "undefined" || typeof obj == null) {
+    if (obj == "undefined" || typeof obj == null || obj == null) {
         return []
     } else {
         const array = Object.keys(obj).map((key) => ({

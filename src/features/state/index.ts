@@ -56,6 +56,9 @@ const useMenuStore = create<TMenuState>()((set, state) => ({
     },
     setEdit: (status, menu) => {
         if (status) {
+            if (menu.product_options == undefined) {
+                menu.product_options = []
+            }
             set({ update: status, edit: menu })
         } else {
             set({ update: status, optionsError: [], variantsError: [] })
@@ -304,6 +307,7 @@ const useMenuStore = create<TMenuState>()((set, state) => ({
         const optionErrors = []
         const variantErrors = []
 
+        console.log("productOptions", productOptions)
         for (let i = 0; i < productOptions.length; i++) {
             const option = productOptions[i]
             const variants = productOptions[i].variants
